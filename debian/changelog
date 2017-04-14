@@ -1,8 +1,10 @@
-ofono (1.18-2) UNRELEASED; urgency=medium
+ofono (1.18-1ev3dev1) testing; urgency=medium
 
-  * Remove myself from Uploaders.
+  * ev3dev takeover
+  * Add upstream patch for using ATD*99# when needed
+  * Add ofono-scripts binary package
 
- -- Jonny Lamb <jonny@debian.org>  Wed, 15 Jun 2016 12:18:43 +0100
+ -- David Lechner <david@lechnology.com>  Fri, 14 Apr 2017 13:06:04 -0500
 
 ofono (1.18-1) unstable; urgency=medium
 
