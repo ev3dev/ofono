@@ -152,6 +152,7 @@ builtin_sources += drivers/rilmodem/rilmodem.h \
 			drivers/rilmodem/call-barring.c \
 			drivers/rilmodem/netmon.c \
 			drivers/rilmodem/stk.c \
+			drivers/rilmodem/cbs.c \
 			drivers/infineonmodem/infineon_constants.h
 endif
 
@@ -684,6 +685,7 @@ test_scripts = test/backtrace \
 		test/receive-sms \
 		test/remove-contexts \
 		test/send-sms \
+		test/cancel-sms \
 		test/set-mic-volume \
 		test/set-speaker-volume \
 		test/test-stk-menu \
@@ -751,7 +753,9 @@ test_scripts = test/backtrace \
 		test/set-sms-smsc \
 		test/set-sms-bearer \
 		test/get-serving-cell-info \
-		test/list-allowed-access-points
+		test/list-allowed-access-points \
+		test/enable-throttling \
+		test/disable-throttling
 
 if TEST
 testdir = $(pkglibdir)/test
@@ -771,7 +775,8 @@ unit_tests = unit/test-common unit/test-util unit/test-idmap \
 				unit/test-sms unit/test-cdmasms \
 				unit/test-rilmodem-cs \
 				unit/test-rilmodem-sms \
-				unit/test-rilmodem-cb
+				unit/test-rilmodem-cb \
+				unit/test-rilmodem-gprs
 
 noinst_PROGRAMS = $(unit_tests) \
 			unit/test-sms-root unit/test-mux unit/test-caif
@@ -827,7 +832,10 @@ test_rilmodem_sources = $(gril_sources) src/log.c src/common.c src/util.c \
 				gatchat/ringbuffer.h gatchat/ringbuffer.c \
 				unit/rilmodem-test-server.h \
 				unit/rilmodem-test-server.c \
-				src/simutil.c
+				unit/rilmodem-test-engine.h \
+				unit/rilmodem-test-engine.c \
+				src/simutil.c \
+				drivers/rilmodem/rilutil.c
 
 unit_test_rilmodem_cs_SOURCES = $(test_rilmodem_sources) \
 					unit/test-rilmodem-cs.c \
@@ -849,6 +857,13 @@ unit_test_rilmodem_cb_SOURCES = $(test_rilmodem_sources) \
 unit_test_rilmodem_cb_LDADD = gdbus/libgdbus-internal.la $(builtin_libadd) \
 					@GLIB_LIBS@ @DBUS_LIBS@ -ldl
 unit_objects += $(unit_test_rilmodem_cb_OBJECTS)
+
+unit_test_rilmodem_gprs_SOURCES = $(test_rilmodem_sources) \
+					unit/test-rilmodem-gprs.c \
+					drivers/rilmodem/gprs.c
+unit_test_rilmodem_gprs_LDADD = gdbus/libgdbus-internal.la $(builtin_libadd) \
+					@GLIB_LIBS@ @DBUS_LIBS@ -ldl
+unit_objects += $(unit_test_rilmodem_gprs_OBJECTS)
 
 TESTS = $(unit_tests)
 

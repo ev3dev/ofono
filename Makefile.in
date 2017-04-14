@@ -108,7 +108,7 @@ host_triplet = @host@
 @RILMODEM_TRUE@	drivers/rilmodem/radio-settings.c \
 @RILMODEM_TRUE@	drivers/rilmodem/call-barring.c \
 @RILMODEM_TRUE@	drivers/rilmodem/netmon.c \
-@RILMODEM_TRUE@	drivers/rilmodem/stk.c \
+@RILMODEM_TRUE@	drivers/rilmodem/stk.c drivers/rilmodem/cbs.c \
 @RILMODEM_TRUE@	drivers/infineonmodem/infineon_constants.h
 @RILMODEM_TRUE@am__append_6 = rildev ril infineon ril_sofia3gr \
 @RILMODEM_TRUE@	rilmodem
@@ -394,7 +394,8 @@ am__EXEEXT_1 = unit/test-common$(EXEEXT) unit/test-util$(EXEEXT) \
 	unit/test-idmap$(EXEEXT) unit/test-simutil$(EXEEXT) \
 	unit/test-stkutil$(EXEEXT) unit/test-sms$(EXEEXT) \
 	unit/test-cdmasms$(EXEEXT) unit/test-rilmodem-cs$(EXEEXT) \
-	unit/test-rilmodem-sms$(EXEEXT) unit/test-rilmodem-cb$(EXEEXT)
+	unit/test-rilmodem-sms$(EXEEXT) unit/test-rilmodem-cb$(EXEEXT) \
+	unit/test-rilmodem-gprs$(EXEEXT)
 @TOOLS_TRUE@am__EXEEXT_2 = tools/huawei-audio$(EXEEXT) \
 @TOOLS_TRUE@	tools/auto-enable$(EXEEXT) \
 @TOOLS_TRUE@	tools/get-location$(EXEEXT) \
@@ -490,7 +491,7 @@ am__src_ofonod_SOURCES_DIST = plugins/udev.c plugins/udevng.c \
 	drivers/rilmodem/call-forwarding.c \
 	drivers/rilmodem/radio-settings.c \
 	drivers/rilmodem/call-barring.c drivers/rilmodem/netmon.c \
-	drivers/rilmodem/stk.c \
+	drivers/rilmodem/stk.c drivers/rilmodem/cbs.c \
 	drivers/infineonmodem/infineon_constants.h gisi/client.c \
 	gisi/client.h gisi/common.h gisi/iter.c gisi/iter.h \
 	gisi/message.c gisi/message.h gisi/modem.c gisi/modem.h \
@@ -673,7 +674,8 @@ am__objects_5 = gril/gril.$(OBJEXT) gril/grilio.$(OBJEXT) \
 @RILMODEM_TRUE@	drivers/rilmodem/radio-settings.$(OBJEXT) \
 @RILMODEM_TRUE@	drivers/rilmodem/call-barring.$(OBJEXT) \
 @RILMODEM_TRUE@	drivers/rilmodem/netmon.$(OBJEXT) \
-@RILMODEM_TRUE@	drivers/rilmodem/stk.$(OBJEXT)
+@RILMODEM_TRUE@	drivers/rilmodem/stk.$(OBJEXT) \
+@RILMODEM_TRUE@	drivers/rilmodem/cbs.$(OBJEXT)
 am__objects_7 = gisi/client.$(OBJEXT) gisi/iter.$(OBJEXT) \
 	gisi/message.$(OBJEXT) gisi/modem.$(OBJEXT) \
 	gisi/netlink.$(OBJEXT) gisi/pep.$(OBJEXT) gisi/pipe.$(OBJEXT) \
@@ -975,7 +977,9 @@ unit_test_mux_DEPENDENCIES =
 am__objects_23 = $(am__objects_5) src/log.$(OBJEXT) \
 	src/common.$(OBJEXT) src/util.$(OBJEXT) \
 	gatchat/ringbuffer.$(OBJEXT) \
-	unit/rilmodem-test-server.$(OBJEXT) src/simutil.$(OBJEXT)
+	unit/rilmodem-test-server.$(OBJEXT) \
+	unit/rilmodem-test-engine.$(OBJEXT) src/simutil.$(OBJEXT) \
+	drivers/rilmodem/rilutil.$(OBJEXT)
 am_unit_test_rilmodem_cb_OBJECTS = $(am__objects_23) \
 	unit/test-rilmodem-cb.$(OBJEXT) \
 	drivers/rilmodem/call-barring.$(OBJEXT)
@@ -987,6 +991,13 @@ am_unit_test_rilmodem_cs_OBJECTS = $(am__objects_23) \
 	drivers/rilmodem/call-settings.$(OBJEXT)
 unit_test_rilmodem_cs_OBJECTS = $(am_unit_test_rilmodem_cs_OBJECTS)
 unit_test_rilmodem_cs_DEPENDENCIES = gdbus/libgdbus-internal.la \
+	$(am__DEPENDENCIES_2)
+am_unit_test_rilmodem_gprs_OBJECTS = $(am__objects_23) \
+	unit/test-rilmodem-gprs.$(OBJEXT) \
+	drivers/rilmodem/gprs.$(OBJEXT)
+unit_test_rilmodem_gprs_OBJECTS =  \
+	$(am_unit_test_rilmodem_gprs_OBJECTS)
+unit_test_rilmodem_gprs_DEPENDENCIES = gdbus/libgdbus-internal.la \
 	$(am__DEPENDENCIES_2)
 am_unit_test_rilmodem_sms_OBJECTS = $(am__objects_23) \
 	unit/test-rilmodem-sms.$(OBJEXT) \
@@ -1090,6 +1101,7 @@ SOURCES = $(gdbus_libgdbus_internal_la_SOURCES) \
 	$(unit_test_common_SOURCES) $(unit_test_idmap_SOURCES) \
 	$(unit_test_mux_SOURCES) $(unit_test_rilmodem_cb_SOURCES) \
 	$(unit_test_rilmodem_cs_SOURCES) \
+	$(unit_test_rilmodem_gprs_SOURCES) \
 	$(unit_test_rilmodem_sms_SOURCES) $(unit_test_simutil_SOURCES) \
 	$(unit_test_sms_SOURCES) $(unit_test_sms_root_SOURCES) \
 	$(unit_test_stkutil_SOURCES) $(unit_test_util_SOURCES)
@@ -1109,6 +1121,7 @@ DIST_SOURCES = $(gdbus_libgdbus_internal_la_SOURCES) \
 	$(unit_test_common_SOURCES) $(unit_test_idmap_SOURCES) \
 	$(unit_test_mux_SOURCES) $(unit_test_rilmodem_cb_SOURCES) \
 	$(unit_test_rilmodem_cs_SOURCES) \
+	$(unit_test_rilmodem_gprs_SOURCES) \
 	$(unit_test_rilmodem_sms_SOURCES) $(unit_test_simutil_SOURCES) \
 	$(unit_test_sms_SOURCES) $(unit_test_sms_root_SOURCES) \
 	$(unit_test_stkutil_SOURCES) $(unit_test_util_SOURCES)
@@ -1677,6 +1690,7 @@ test_scripts = test/backtrace \
 		test/receive-sms \
 		test/remove-contexts \
 		test/send-sms \
+		test/cancel-sms \
 		test/set-mic-volume \
 		test/set-speaker-volume \
 		test/test-stk-menu \
@@ -1744,7 +1758,9 @@ test_scripts = test/backtrace \
 		test/set-sms-smsc \
 		test/set-sms-bearer \
 		test/get-serving-cell-info \
-		test/list-allowed-access-points
+		test/list-allowed-access-points \
+		test/enable-throttling \
+		test/disable-throttling
 
 @TEST_TRUE@testdir = $(pkglibdir)/test
 @TEST_TRUE@test_SCRIPTS = $(test_scripts)
@@ -1759,13 +1775,15 @@ unit_objects = $(unit_test_common_OBJECTS) $(unit_test_utils_OBJECTS) \
 	$(unit_test_mux_OBJECTS) $(unit_test_caif_OBJECTS) \
 	$(unit_test_rilmodem_cs_OBJECTS) \
 	$(unit_test_rilmodem_sms_OBJECTS) \
-	$(unit_test_rilmodem_cb_OBJECTS)
+	$(unit_test_rilmodem_cb_OBJECTS) \
+	$(unit_test_rilmodem_gprs_OBJECTS)
 unit_tests = unit/test-common unit/test-util unit/test-idmap \
 				unit/test-simutil unit/test-stkutil \
 				unit/test-sms unit/test-cdmasms \
 				unit/test-rilmodem-cs \
 				unit/test-rilmodem-sms \
-				unit/test-rilmodem-cb
+				unit/test-rilmodem-cb \
+				unit/test-rilmodem-gprs
 
 unit_test_common_SOURCES = unit/test-common.c src/common.c src/util.c
 unit_test_common_LDADD = @GLIB_LIBS@
@@ -1802,7 +1820,10 @@ test_rilmodem_sources = $(gril_sources) src/log.c src/common.c src/util.c \
 				gatchat/ringbuffer.h gatchat/ringbuffer.c \
 				unit/rilmodem-test-server.h \
 				unit/rilmodem-test-server.c \
-				src/simutil.c
+				unit/rilmodem-test-engine.h \
+				unit/rilmodem-test-engine.c \
+				src/simutil.c \
+				drivers/rilmodem/rilutil.c
 
 unit_test_rilmodem_cs_SOURCES = $(test_rilmodem_sources) \
 					unit/test-rilmodem-cs.c \
@@ -1823,6 +1844,13 @@ unit_test_rilmodem_cb_SOURCES = $(test_rilmodem_sources) \
 					drivers/rilmodem/call-barring.c
 
 unit_test_rilmodem_cb_LDADD = gdbus/libgdbus-internal.la $(builtin_libadd) \
+					@GLIB_LIBS@ @DBUS_LIBS@ -ldl
+
+unit_test_rilmodem_gprs_SOURCES = $(test_rilmodem_sources) \
+					unit/test-rilmodem-gprs.c \
+					drivers/rilmodem/gprs.c
+
+unit_test_rilmodem_gprs_LDADD = gdbus/libgdbus-internal.la $(builtin_libadd) \
 					@GLIB_LIBS@ @DBUS_LIBS@ -ldl
 
 @TOOLS_TRUE@tools_huawei_audio_SOURCES = tools/huawei-audio.c
@@ -2202,6 +2230,8 @@ drivers/rilmodem/call-barring.$(OBJEXT):  \
 drivers/rilmodem/netmon.$(OBJEXT): drivers/rilmodem/$(am__dirstamp) \
 	drivers/rilmodem/$(DEPDIR)/$(am__dirstamp)
 drivers/rilmodem/stk.$(OBJEXT): drivers/rilmodem/$(am__dirstamp) \
+	drivers/rilmodem/$(DEPDIR)/$(am__dirstamp)
+drivers/rilmodem/cbs.$(OBJEXT): drivers/rilmodem/$(am__dirstamp) \
 	drivers/rilmodem/$(DEPDIR)/$(am__dirstamp)
 gisi/$(am__dirstamp):
 	@$(MKDIR_P) gisi
@@ -2939,6 +2969,8 @@ unit/test-mux$(EXEEXT): $(unit_test_mux_OBJECTS) $(unit_test_mux_DEPENDENCIES) $
 	$(AM_V_CCLD)$(LINK) $(unit_test_mux_OBJECTS) $(unit_test_mux_LDADD) $(LIBS)
 unit/rilmodem-test-server.$(OBJEXT): unit/$(am__dirstamp) \
 	unit/$(DEPDIR)/$(am__dirstamp)
+unit/rilmodem-test-engine.$(OBJEXT): unit/$(am__dirstamp) \
+	unit/$(DEPDIR)/$(am__dirstamp)
 unit/test-rilmodem-cb.$(OBJEXT): unit/$(am__dirstamp) \
 	unit/$(DEPDIR)/$(am__dirstamp)
 
@@ -2951,6 +2983,12 @@ unit/test-rilmodem-cs.$(OBJEXT): unit/$(am__dirstamp) \
 unit/test-rilmodem-cs$(EXEEXT): $(unit_test_rilmodem_cs_OBJECTS) $(unit_test_rilmodem_cs_DEPENDENCIES) $(EXTRA_unit_test_rilmodem_cs_DEPENDENCIES) unit/$(am__dirstamp)
 	@rm -f unit/test-rilmodem-cs$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(unit_test_rilmodem_cs_OBJECTS) $(unit_test_rilmodem_cs_LDADD) $(LIBS)
+unit/test-rilmodem-gprs.$(OBJEXT): unit/$(am__dirstamp) \
+	unit/$(DEPDIR)/$(am__dirstamp)
+
+unit/test-rilmodem-gprs$(EXEEXT): $(unit_test_rilmodem_gprs_OBJECTS) $(unit_test_rilmodem_gprs_DEPENDENCIES) $(EXTRA_unit_test_rilmodem_gprs_DEPENDENCIES) unit/$(am__dirstamp)
+	@rm -f unit/test-rilmodem-gprs$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(unit_test_rilmodem_gprs_OBJECTS) $(unit_test_rilmodem_gprs_LDADD) $(LIBS)
 unit/test-rilmodem-sms.$(OBJEXT): unit/$(am__dirstamp) \
 	unit/$(DEPDIR)/$(am__dirstamp)
 
@@ -3164,6 +3202,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@drivers/rilmodem/$(DEPDIR)/call-forwarding.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@drivers/rilmodem/$(DEPDIR)/call-settings.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@drivers/rilmodem/$(DEPDIR)/call-volume.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@drivers/rilmodem/$(DEPDIR)/cbs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@drivers/rilmodem/$(DEPDIR)/devinfo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@drivers/rilmodem/$(DEPDIR)/gprs-context.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@drivers/rilmodem/$(DEPDIR)/gprs.Po@am__quote@
@@ -3366,6 +3405,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@tools/$(DEPDIR)/qmi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tools/$(DEPDIR)/stktest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tools/$(DEPDIR)/tty-redirector.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/rilmodem-test-engine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/rilmodem-test-server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test-caif.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test-cdmasms.Po@am__quote@
@@ -3374,6 +3414,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test-mux.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test-rilmodem-cb.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test-rilmodem-cs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test-rilmodem-gprs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test-rilmodem-sms.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test-simutil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test-sms-root.Po@am__quote@
@@ -3876,6 +3917,13 @@ unit/test-rilmodem-sms.log: unit/test-rilmodem-sms$(EXEEXT)
 unit/test-rilmodem-cb.log: unit/test-rilmodem-cb$(EXEEXT)
 	@p='unit/test-rilmodem-cb$(EXEEXT)'; \
 	b='unit/test-rilmodem-cb'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+unit/test-rilmodem-gprs.log: unit/test-rilmodem-gprs$(EXEEXT)
+	@p='unit/test-rilmodem-gprs$(EXEEXT)'; \
+	b='unit/test-rilmodem-gprs'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
