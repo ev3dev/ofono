@@ -1,3 +1,9 @@
+ofono (1.18-1ev3dev1+jessie2) stable; urgency=medium
+
+  * Add upstream patch for reconnecting huawei modem
+
+ -- David Lechner <david@lechnology.com>  Mon, 17 Apr 2017 22:15:29 -0500
+
 ofono (1.18-1ev3dev1+jessie1) stable; urgency=medium
 
   * ev3dev takeover
